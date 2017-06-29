@@ -107,10 +107,10 @@ defmodule Cloudex.Settings do
     map
   end
 
-  defp get_app_config([:url|_keys], map) do
+  defp get_app_config([key|_keys], map) when key == :url do
     Map.merge(
       map,
-      Application.get_env(:cloudex, :url) |> parse_url()
+      Application.get_env(:cloudex, key) |> parse_url()
     )
   end
 
@@ -119,6 +119,8 @@ defmodule Cloudex.Settings do
     get_app_config(keys, new_map)
   end
 
+  defp parse_url(nil), do: %{}
+  
   defp parse_url(url) do
     case Regex.run(~r/cloudinary:\/\/([^:]+):([^@]+)@(\w+)/, url) do
         [_url, api_key, secret, cloud_name] -> %{api_key: api_key, secret: secret, cloud_name: cloud_name}
