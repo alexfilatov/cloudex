@@ -10,9 +10,9 @@ defmodule Cloudex.Settings do
   Called by the supervisor, this will use settings defined in config.exs or ENV vars
   """
   def start(:normal, []) do
-    [:api_key, :secret, :cloud_name]
-      |> get_app_config
-      |> EnvOptions.merge_missing_settings
+    [:api_key, :secret, :cloud_name, :url]
+      |> get_app_config()
+      |> EnvOptions.merge_missing_settings()
       |> start
   end
 
@@ -88,6 +88,20 @@ defmodule Cloudex.Settings do
       Cloudex.Settings.get(:bogus)
       > {:error, "key not found"}
   """
+  def get(env_key) when env_key == :url do
+    # env_key = ("cloudinary_" <> Atom.to_string(key)) |> String.upcase
+    # env_value = System.get_env(env_key)
+    # case env_value do
+    #   nil ->
+    #     result = GenServer.call(:cloudex, :settings)
+    #     case key do
+    #       nil -> {:error, "key not found"}
+    #       _ -> result[key]
+    #     end
+    #   _ -> env_value
+    # end
+  end
+
   def get(key) when is_atom(key) do
     env_key = ("cloudinary_" <> Atom.to_string(key)) |> String.upcase
     env_value = System.get_env(env_key)
@@ -107,13 +121,26 @@ defmodule Cloudex.Settings do
     map
   end
 
+  defp get_app_config([:url|_keys], map), do: Application.get_env(:cloudex, :url) |> parse_url()
+
   defp get_app_config([key|keys], map) do
-    new_map = Map.put map, key, Application.get_env(:cloudex, key)
+    new_map = Map.put(map, key, Application.get_env(:cloudex, key))
     get_app_config(keys, new_map)
+  end
+
+  defp parse_url(url) do
+    case Regex.run(~r/cloudinary:\/\/([^:]+):([^@]+)@(\w+)/, url) do
+        [_url, api_key, secret, cloud_name] -> %{api_key: api_key, secret: secret, cloud_name: cloud_name}
+        _ -> validate(url)
+    end
   end
 
   defp validate(%{api_key: "placeholder", secret: "placeholder", cloud_name: "placeholder"}) do
     {:error, :placeholder_settings}
+  end
+
+  defp validate(%{url: url} = settings) when is_binary(url) do
+    {:ok, settings}
   end
 
   defp validate(%{api_key: api_key, secret: secret, cloud_name: cloud_name} = settings) when is_binary(api_key) and is_binary(secret) and is_binary(cloud_name) do
@@ -127,6 +154,8 @@ You can solve this in two ways :
 add the following to your config.exs or config/[dev/test/prod]: cloudex, api_key: YOUR_CLOUDINARY_API_KEY, secret: YOUR_CLOUDINARY_SECRET, cloud_name: YOUR_CLOUDINARY_CLOUD_NAME
 -or-
 Set the following ENV vars CLOUDEX_API_KEY CLOUDEX_SECRET CLOUDEX_CLOUD_NAME
+-or-
+Specify correct CLOUDINARY URL in the format "cloudinary://API_KEY:SECRET@CLOUD_NAME"
 >}
   end
 
