@@ -38,6 +38,17 @@ or in your config.exs using :
     secret: "my-secret",
     cloud_name: "my-cloud-name"
 ```
+or specify only Cloudinary URL like below:
+
+```elixir
+  config :cloudex,
+    url: "cloudinary://API_KEY:SECRET@CLOUD_NAME",
+```
+You can put url into ENV VAR like below and this will be substritutes with real URL on compile time:
+```elixir
+  config :cloudex,
+    url: System.get_env("CLOUDIARY_URL"),
+```
 
 ## Uploading
 You can upload image files or urls pointing to an image as follows :
@@ -169,14 +180,14 @@ Cloudex.Url.for("a_public_id", [
 ```
 ## Deleting images
 You can request deletion from cloudinary using ```Cloudex.delete/1``` function where the first argument should be the public id of the image you want to delete.
- 
+
 ### example:
 ```
 Cloudex.delete("public-id-1")
 # => {:ok, %Cloudex.DeletedImage{public_id: "public-id-1"}}
 
 Cloudex.delete(["public-id-1", "public-id-2"])
-# => 
+# =>
 [
   {:ok, %Cloudex.DeletedImage{public_id: "public-id-1"}},
   {:ok, %Cloudex.DeletedImage{public_id: "public-id-2"}}
