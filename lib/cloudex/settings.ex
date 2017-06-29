@@ -121,7 +121,12 @@ defmodule Cloudex.Settings do
     map
   end
 
-  defp get_app_config([:url|_keys], map), do: Application.get_env(:cloudex, :url) |> parse_url()
+  defp get_app_config([:url|_keys], map) do
+    Map.merge(
+      map,
+      Application.get_env(:cloudex, :url) |> parse_url()
+    )
+  end
 
   defp get_app_config([key|keys], map) do
     new_map = Map.put(map, key, Application.get_env(:cloudex, key))
