@@ -88,20 +88,6 @@ defmodule Cloudex.Settings do
       Cloudex.Settings.get(:bogus)
       > {:error, "key not found"}
   """
-  def get(env_key) when env_key == :url do
-    # env_key = ("cloudinary_" <> Atom.to_string(key)) |> String.upcase
-    # env_value = System.get_env(env_key)
-    # case env_value do
-    #   nil ->
-    #     result = GenServer.call(:cloudex, :settings)
-    #     case key do
-    #       nil -> {:error, "key not found"}
-    #       _ -> result[key]
-    #     end
-    #   _ -> env_value
-    # end
-  end
-
   def get(key) when is_atom(key) do
     env_key = ("cloudinary_" <> Atom.to_string(key)) |> String.upcase
     env_value = System.get_env(env_key)
